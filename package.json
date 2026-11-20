@@ -1,0 +1,17 @@
+{
+  "name": "agente-financeiro",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plugin do Agente Financeiro para Claude: skill de análise financeira e conector MCP local.",
+  "type": "module",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "test": "npm --prefix plugin/server test",
+    "check": "npm --prefix plugin/server run check",
+    "start": "npm --prefix plugin/server start",
+    "docs": "npm --prefix plugin/server run docs"
+  },
+  "license": "UNLICENSED"
+}

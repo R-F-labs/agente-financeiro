@@ -1,0 +1,23 @@
+# Dependencies and caches
+node_modules/
+.mcpb-cache/
+
+# Local data: never commit financial data or documents
+*.pdf
+*.xlsx
+*.csv
+dados/
+planilhas/
+agente-financeiro.json
+
+# Environment and editors
+.env
+.env.*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
