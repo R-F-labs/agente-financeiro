@@ -1,0 +1,19 @@
+{
+  "name": "agente-financeiro",
+  "displayName": "Agente Financeiro",
+  "version": "0.1.0",
+  "description": "Analista financeiro pessoal: lê extratos e faturas em PDF, confere os valores, categoriza gastos, acompanha parcelas, carteira e metas e faz o fechamento mensal. Os dados ficam no computador do usuário.",
+  "author": {
+    "name": "R-F-labs",
+    "url": "https://github.com/R-F-labs"
+  },
+  "homepage": "https://github.com/R-F-labs/agente-financeiro",
+  "repository": "https://github.com/R-F-labs/agente-financeiro",
+  "keywords": ["financas-pessoais", "fluxo-de-caixa", "investimentos", "extratos", "mcp"],
+  "mcpServers": {
+    "agente-financeiro": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/server/src/index.js"]
+    }
+  }
+}

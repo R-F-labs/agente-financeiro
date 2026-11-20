@@ -1,0 +1,17 @@
+{
+  "name": "agente-financeiro",
+  "description": "Catálogo do plugin Agente Financeiro.",
+  "owner": {
+    "name": "R-F-labs",
+    "url": "https://github.com/R-F-labs"
+  },
+  "plugins": [
+    {
+      "name": "agente-financeiro",
+      "source": "./plugin",
+      "description": "Analista financeiro pessoal com dados guardados no computador do usuário.",
+      "category": "productivity",
+      "tags": ["financas", "investimentos", "extratos"]
+    }
+  ]
+}
