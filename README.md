@@ -1,6 +1,6 @@
 # Agente Financeiro
 
-Plugin para o Claude que funciona como analista financeiro pessoal. Lê extratos bancários, faturas de cartão e extratos de investimento em PDF, confere os valores com os totais de cada documento, categoriza os gastos, acompanha parcelas, carteira e metas e, todo mês, entrega um diagnóstico com as decisões mais importantes em ordem de prioridade.
+Plugin para o Claude que funciona como analista financeiro pessoal. Lê extratos bancários, faturas de cartão e extratos de investimento em PDF, ZIP ou CSV, inclusive arquivos protegidos por senha, confere os valores com os totais de cada documento, categoriza os gastos, acompanha parcelas, carteira e metas e, todo mês, entrega um diagnóstico com as decisões mais importantes em ordem de prioridade.
 
 Todos os dados ficam guardados no computador do usuário.
 
@@ -12,6 +12,7 @@ Todos os dados ficam guardados no computador do usuário.
 - [Uso no dia a dia](#uso-no-dia-a-dia)
 - [Onde ficam os dados](#onde-ficam-os-dados)
 - [Documentos suportados](#documentos-suportados)
+- [Segurança e desfazer alterações](#segurança-e-desfazer-alterações)
 - [Atualização e desinstalação](#atualização-e-desinstalação)
 - [Instruções para o assistente](#instruções-para-o-assistente)
 - [Estrutura do repositório](#estrutura-do-repositório)
@@ -23,6 +24,7 @@ Todos os dados ficam guardados no computador do usuário.
 | Área | Funcionalidades |
 |---|---|
 | Leitura de documentos | Extratos de conta corrente, faturas de cartão e extratos de investimento; conferência com os totais do próprio documento e nova leitura guiada quando não fecha |
+| Arquivos protegidos | PDFs com senha (RC4 e AES até 256 bits) e ZIPs com senha (ZipCrypto e AES), abertos em memória com a senha informada na conversa, sem guardar a senha nem gravar cópia desprotegida |
 | Organização | Eliminação de lançamentos repetidos (inclusive em extratos com períodos sobrepostos), categorização por regras aprendidas, central de pendências |
 | Conciliação | Parcelas futuras previstas e confirmadas fatura a fatura, pagamento de fatura, transferências entre contas próprias, aplicações e resgates |
 | Relatórios | Fluxo de caixa por competência e por caixa, desvios por categoria contra a média, compromissos futuros, custo com juros e IOF |
@@ -30,6 +32,7 @@ Todos os dados ficam guardados no computador do usuário.
 | Mercado | Selic, CDI, IPCA, IGP-M, dólar e expectativas do Focus (Banco Central); cotações da B3 (brapi.dev) |
 | Fechamento mensal | Pacote com todos os números já calculados e análise com diagnóstico, cenários e decisões priorizadas, com registro das respostas do usuário |
 | Planilhas | Exportação para Excel (fluxo de caixa, gastos por competência, lançamentos, compromissos e carteira) |
+| Segurança | Confirmação do usuário antes de ações sensíveis, cópia do estado anterior a cada alteração, histórico de mudanças e restauração de backups |
 
 ## Como funciona
 
@@ -96,25 +99,32 @@ Exemplos de pedidos:
 | Pedido | O que acontece |
 |---|---|
 | "Registra o extrato do Santander e a fatura do Nubank" (com os PDFs anexados) | Leitura, conferência, categorização e conciliação |
+| "Registra a fatura do C6 que está na pasta entrada, a senha é 12345" | Abertura do ZIP com a senha, leitura do conteúdo e registro |
 | "Quanto gastei com aplicativos de transporte em outubro?" | Consulta aos lançamentos |
 | "Quanto tenho de parcelas nos próximos meses?" | Compromissos futuros |
 | "Como está minha carteira?" | Posição, rentabilidade e comparação com a referência |
 | "Fecha o mês de outubro" | Pacote do mês, diagnóstico, cenários e decisões priorizadas |
 | "Gera a planilha" | Arquivo Excel na pasta `planilhas` |
+| "O que você mudou hoje?" ou "Desfaz a última categorização" | Histórico de alterações e restauração, com confirmação |
 
 ## Onde ficam os dados
 
 ```
 <pasta escolhida>/
 ├── LEIA-ME.txt
+├── entrada/                       Extratos e faturas a processar (PDF, ZIP, CSV), com ou sem senha
 ├── dados/
 │   ├── agente-financeiro.json     Base de dados (não editar manualmente)
-│   └── backups/                   Cópias diárias dos últimos 30 dias
-└── planilhas/                     Planilhas geradas
+│   ├── historico.jsonl            Registro de cada alteração
+│   └── backups/
+│       ├── agente-financeiro-AAAA-MM-DD.json   Cópias diárias dos últimos 30 dias
+│       └── operacoes/             Estado anterior a cada alteração (últimas 50)
+└── planilhas/                     Planilhas geradas (nunca sobrescritas)
 ```
 
 - Nada é enviado a servidores do plugin. As únicas consultas externas são aos dados públicos de mercado.
-- Os PDFs não são copiados: o assistente lê o arquivo anexado e envia ao conector apenas os lançamentos e totais.
+- Os documentos não são copiados para a base: o conector guarda apenas os lançamentos, os totais e o nome do arquivo.
+- Senhas de arquivos são usadas só durante a leitura, em memória. Nenhuma versão desprotegida é gravada.
 
 Mais em [docs/privacidade-e-seguranca.md](docs/privacidade-e-seguranca.md).
 
@@ -125,8 +135,25 @@ Mais em [docs/privacidade-e-seguranca.md](docs/privacidade-e-seguranca.md).
 | Santander | Extrato de conta corrente (PDF do internet banking) | Guia de leitura específico |
 | Nubank | Fatura do cartão de crédito (PDF) | Guia de leitura específico |
 | Demais bancos, cartões e corretoras | Extratos, faturas e extratos de investimento em PDF | Leitura pelas regras gerais, com conferência dos totais |
+| Qualquer instituição | PDF ou ZIP protegido por senha | Aberto pelo conector com a senha informada pelo usuário |
+| Qualquer instituição | CSV, TXT ou OFX exportado pelo aplicativo (solto ou dentro de ZIP) | Leitura pelas regras gerais, com conferência dos totais |
 
-Não suportados nesta versão: PDFs protegidos por senha (desbloqueie antes de anexar), planilhas CSV ou ZIP exportadas por aplicativos, previdência e criptoativos. Notas de corretagem e informes de rendimentos são lidos e comentados, mas não registrados.
+Para que o conector abra um arquivo protegido, ele precisa estar no computador: na pasta `entrada` ou em um caminho informado ao assistente. Basta escrever a senha junto com o pedido.
+
+Não suportados nesta versão: PDFs escaneados (imagem, sem texto), previdência e criptoativos. Notas de corretagem e informes de rendimentos são lidos e comentados, mas não registrados.
+
+## Segurança e desfazer alterações
+
+| Proteção | Como funciona |
+|---|---|
+| Confirmação obrigatória | Ações sensíveis só acontecem depois que o usuário concorda com um resumo do que vai mudar: gravar documento que não fecha com os totais, categorizar 25 ou mais lançamentos de uma vez, cancelar parcelas futuras, desativar conta, substituir a análise do mês, trocar a pasta de dados e restaurar backup. A confirmação usa um código de uso único, válido por 10 minutos e só para os mesmos argumentos. |
+| Nada é apagado | O conector não tem ferramenta de exclusão. Registros são desativados, cancelados ou resolvidos, e continuam no histórico. |
+| Escolhas do usuário prevalecem | Sugestões automáticas nunca trocam uma categoria escolhida pelo usuário. |
+| Cópia antes de cada alteração | O estado anterior a cada mudança é guardado (últimas 50), além de uma cópia diária (últimos 30 dias). |
+| Histórico | Cada alteração é registrada com data, ação e o que mudou. |
+| Desfazer | O assistente lista o histórico e os backups e restaura o ponto escolhido, com confirmação. A restauração também pode ser desfeita. |
+| Documentos são dados | Instruções escritas dentro de documentos são ignoradas e apontadas ao usuário. |
+| Arquivos | Leitura limitada a PDF, ZIP, CSV, TXT e OFX de até 30 MB, com limites contra arquivos compactados maliciosos. Planilhas nunca são sobrescritas. |
 
 ## Atualização e desinstalação
 
@@ -144,7 +171,7 @@ Esta seção é destinada a um assistente de IA (por exemplo, Claude Code) que r
 5. Na nova sessão, chame a ferramenta `get_status` do conector `agente-financeiro`. Se `configured` for `false`, siga o roteiro da skill `agente-financeiro`: pergunte em qual pasta os dados devem ficar (sugira uma pasta sincronizada com a nuvem) e chame `setup_workspace`.
 6. Continue a configuração (perfil, contas, categorias e metas) conversando com o usuário, uma etapa por vez.
 
-Não peça senhas, CPF ou números completos de conta ou cartão.
+Não peça senhas de banco, CPF ou números completos de conta ou cartão. A senha de um arquivo protegido só é usada quando o próprio usuário a informa para abrir aquele documento.
 
 ## Estrutura do repositório
 
@@ -178,6 +205,7 @@ Não peça senhas, CPF ou números completos de conta ou cartão.
 
 - Ferramenta de apoio à decisão: não executa operações financeiras e não substitui assessoria de investimentos de profissional certificado.
 - A qualidade da leitura depende do PDF. Documentos escaneados ou com baixa qualidade podem exigir revisão manual; a conferência dos totais impede que uma leitura incompleta seja gravada sem o conhecimento do usuário.
+- Arquivos anexados na conversa do Cowork não ficam visíveis para o conector local. Arquivos protegidos devem ser salvos na pasta `entrada` (ou informados por caminho no Claude Code).
 - O fechamento mensal acontece quando o usuário pede ao assistente; não há execução automática.
 - Uso individual: um usuário por pasta de dados.
 
