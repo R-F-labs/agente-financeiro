@@ -44,6 +44,8 @@ export const closingTools = [
       },
       ['month', 'summary', 'decisions'],
     ),
+    annotations: { readOnlyHint: false, destructiveHint: true },
+    confirm: confirmAnalysisReplacement,
     handler: (input) =>
       requireStore().transact((data) => {
         data.analyses = data.analyses.filter((analysis) => analysis.month !== input.month);
@@ -89,6 +91,7 @@ export const closingTools = [
       { decision_id: { type: 'string' }, status: { type: 'string', enum: ['accepted', 'rejected', 'postponed'] }, note: { type: 'string' } },
       ['decision_id', 'status'],
     ),
+    annotations: { readOnlyHint: false, destructiveHint: true },
     handler: (input) =>
       requireStore().transact((data) => {
         const decision = data.decisions.find((item) => item.id === input.decision_id);
@@ -100,3 +103,14 @@ export const closingTools = [
       }),
   },
 ];
+
+function confirmAnalysisReplacement({ month }) {
+  const data = requireStore().data;
+  const existing = data.analyses.find((analysis) => analysis.month === month);
+  if (!existing) return null;
+  const pending = data.decisions.filter((decision) => decision.month === month && decision.status === 'pending').length;
+  return {
+    summary: `Substituir a análise já salva de ${month} (de ${existing.createdAt.slice(0, 10)}) e as ${pending} decisões dela ainda sem resposta. Decisões já respondidas pelo usuário são mantidas.`,
+    details: { month, previousAnalysisAt: existing.createdAt, pendingDecisionsReplaced: pending },
+  };
+}

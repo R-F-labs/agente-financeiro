@@ -56,6 +56,8 @@ export const documentTools = [
       },
       ['account_id', 'period_start', 'period_end', 'totals', 'transactions'],
     ),
+    annotations: { readOnlyHint: false, destructiveHint: false },
+    confirm: confirmForcedRegistration,
     handler: (input) => registerBankStatement(requireStore(), input),
   },
   {
@@ -100,6 +102,8 @@ export const documentTools = [
       },
       ['account_id', 'period_start', 'period_end', 'due_date', 'totals', 'transactions'],
     ),
+    annotations: { readOnlyHint: false, destructiveHint: false },
+    confirm: confirmForcedRegistration,
     handler: (input) => registerCardInvoice(requireStore(), input),
   },
   {
@@ -130,6 +134,8 @@ export const documentTools = [
       },
       ['account_id', 'period_start', 'period_end', 'positions'],
     ),
+    annotations: { readOnlyHint: false, destructiveHint: false },
+    confirm: confirmForcedRegistration,
     handler: (input) => registerInvestmentStatement(requireStore(), input),
   },
   {
@@ -146,3 +152,19 @@ export const documentTools = [
     }),
   },
 ];
+
+const DOCUMENT_LABELS = {
+  register_bank_statement: 'o extrato',
+  register_card_invoice: 'a fatura',
+  register_investment_statement: 'o extrato de investimentos',
+};
+
+/** Forced registration keeps a document that does not match its printed totals. */
+function confirmForcedRegistration(input) {
+  if (!input.force) return null;
+  const label = input.due_date ? DOCUMENT_LABELS.register_card_invoice : input.positions ? DOCUMENT_LABELS.register_investment_statement : DOCUMENT_LABELS.register_bank_statement;
+  return {
+    summary: `Gravar ${label} ${input.file_name ? `"${input.file_name}" ` : ''}de ${input.period_start ?? '?'} a ${input.period_end ?? '?'} mesmo sem fechar com os totais impressos. A diferença fica anotada no documento e aparece nos alertas do fechamento.`,
+    details: { file: input.file_name ?? null, periodStart: input.period_start ?? null, periodEnd: input.period_end ?? null },
+  };
+}

@@ -1,5 +1,5 @@
 import { object } from './schemas.js';
-import { requireStore, setupWorkspace, workspaceStatus } from '../storage/workspace.js';
+import { requireStore, setupWorkspace, workspaceChange, workspaceStatus } from '../storage/workspace.js';
 
 /** @type {import('../mcp/registry.js').ToolDefinition[]} */
 export const workspaceTools = [
@@ -24,6 +24,7 @@ export const workspaceTools = [
       return {
         configured: true,
         dataDir: status.dataDir,
+        inputDir: store.layout.inbox,
         spreadsheetsDir: store.layout.spreadsheets,
         profileFilled: Boolean(data.profile?.riskTolerance),
         accounts: data.accounts.filter((account) => account.active !== false).length,
@@ -43,12 +44,21 @@ export const workspaceTools = [
     description:
       'Define a pasta do computador onde os dados ficam guardados e cria a estrutura (dados, backups e planilhas). Use um caminho completo. Pode ser chamada de novo para apontar para outra pasta.',
     inputSchema: object({ data_dir: { type: 'string', minLength: 2, description: 'Caminho completo da pasta. Aceita ~ para a pasta do usuário.' } }, ['data_dir']),
-    annotations: { idempotentHint: true },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    confirm: ({ data_dir }) => {
+      const change = workspaceChange(data_dir);
+      if (!change) return null;
+      return {
+        summary: `Trocar a pasta de dados de "${change.from}" para "${change.to}". Os dados da pasta atual não são apagados nem copiados; o agente passa a usar a nova pasta.`,
+        details: change,
+      };
+    },
     handler: ({ data_dir }) => {
       const result = setupWorkspace(data_dir);
       return {
         dataDir: result.dataDir,
         dataFile: result.layout.dataFile,
+        inputDir: result.layout.inbox,
         backupsDir: result.layout.backups,
         spreadsheetsDir: result.layout.spreadsheets,
         nextSteps: ['Siga o roteiro de configuração: perfil, contas, metas e primeiro documento.'],

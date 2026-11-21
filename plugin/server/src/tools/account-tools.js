@@ -38,6 +38,8 @@ export const accountTools = [
       },
       [],
     ),
+    annotations: { readOnlyHint: false, destructiveHint: true },
+    confirm: confirmAccountDeactivation,
     handler: (input) =>
       requireStore().transact((data) => {
         if (input.account_id) {
@@ -78,4 +80,16 @@ function applyAccountFields(account, input) {
   for (const [inputKey, key] of Object.entries(map)) {
     if (input[inputKey] !== undefined) account[key] = input[inputKey];
   }
+}
+
+function confirmAccountDeactivation(input) {
+  if (!input.account_id || input.active !== false) return null;
+  const data = requireStore().data;
+  const account = data.accounts.find((item) => item.id === input.account_id);
+  if (!account || account.active === false) return null;
+  const transactions = data.transactions.filter((tx) => tx.accountId === account.id).length;
+  return {
+    summary: `Desativar a conta "${account.nickname}". Os ${transactions} lançamentos dela continuam guardados, mas a conta deixa de ser cobrada no fechamento mensal.`,
+    details: { accountId: account.id, transactions },
+  };
 }

@@ -7,6 +7,9 @@ import { monthOf } from '../lib/dates.js';
 
 const NATURES = ['income', 'expense', 'transfer', 'investment_contribution', 'investment_withdrawal', 'card_payment'];
 
+/** From this many changed transactions, a categorization needs the user's agreement. */
+export const BULK_CATEGORIZATION_LIMIT = 25;
+
 /** @type {import('../mcp/registry.js').ToolDefinition[]} */
 export const transactionTools = [
   {
@@ -82,16 +85,24 @@ export const transactionTools = [
       },
       ['items'],
     ),
+    annotations: { readOnlyHint: false, destructiveHint: true },
+    confirm: confirmBulkCategorization,
     handler: ({ items, source = 'user' }) =>
       requireStore().transact((data) => {
         const categories = new Map(data.categories.map((category) => [category.id, category]));
         let updated = 0;
         const rules = [];
+        const skippedManual = [];
         for (const item of items) {
           const tx = data.transactions.find((candidate) => candidate.id === item.transaction_id);
           if (!tx) throw new UserError(`Lançamento não encontrado: ${item.transaction_id}`);
           if (!categories.has(item.category_id)) throw new UserError(`Categoria não encontrada: ${item.category_id}`);
           const origin = source === 'user' ? 'manual' : 'assistant';
+          if (origin === 'assistant' && tx.categorySource === 'manual' && tx.categoryId && tx.categoryId !== item.category_id) {
+            // Guardrail: a suggestion never replaces a category the user chose.
+            skippedManual.push(tx.id);
+            continue;
+          }
           tx.categoryId = item.category_id;
           tx.categorySource = origin;
           updated += 1;
@@ -109,7 +120,12 @@ export const transactionTools = [
             }
           }
         }
-        return { updated, rulesLearned: [...new Set(rules)] };
+        return {
+          updated,
+          rulesLearned: [...new Set(rules)],
+          skippedManual,
+          note: skippedManual.length > 0 ? 'Lançamentos com categoria escolhida pelo usuário não foram alterados. Para mudar, confirme com ele e use source "user".' : undefined,
+        };
       }),
   },
   {
@@ -128,6 +144,8 @@ export const transactionTools = [
       },
       ['transaction_id'],
     ),
+    annotations: { readOnlyHint: false, destructiveHint: true },
+    confirm: confirmTransactionChange,
     handler: (input) =>
       requireStore().transact((data) => {
         const tx = data.transactions.find((candidate) => candidate.id === input.transaction_id);
@@ -156,3 +174,39 @@ export const transactionTools = [
       }),
   },
 ];
+
+function confirmBulkCategorization({ items, source = 'user' }) {
+  const data = requireStore().data;
+  const byId = new Map(data.transactions.map((tx) => [tx.id, tx]));
+  const seen = new Set();
+  let replacedManual = 0;
+  for (const item of items) {
+    const tx = byId.get(item.transaction_id);
+    if (!tx) continue;
+    seen.add(tx.id);
+    if (source === 'user' && tx.categorySource === 'manual' && tx.categoryId && tx.categoryId !== item.category_id) replacedManual += 1;
+    if (item.apply_to_similar) {
+      for (const other of data.transactions) {
+        if (other.id !== tx.id && !other.categoryId && other.payeeKey === tx.payeeKey) seen.add(other.id);
+      }
+    }
+  }
+  if (seen.size < BULK_CATEGORIZATION_LIMIT && replacedManual < 5) return null;
+  return {
+    summary: `Categorizar ${seen.size} lançamentos de uma vez${replacedManual > 0 ? `, trocando ${replacedManual} categorias escolhidas antes pelo usuário` : ''}.`,
+    details: { transactions: seen.size, replacedManualCategories: replacedManual },
+  };
+}
+
+function confirmTransactionChange(input) {
+  if (!input.cancel_remaining_installments) return null;
+  const data = requireStore().data;
+  const tx = data.transactions.find((candidate) => candidate.id === input.transaction_id);
+  if (!tx?.installment) return null;
+  const forecasts = data.transactions.filter((other) => other.status === 'forecast' && other.installment?.groupId === tx.installment.groupId);
+  const total = forecasts.reduce((sum, other) => sum + Math.abs(other.amountCents), 0);
+  return {
+    summary: `Cancelar ${forecasts.length} parcelas futuras previstas de "${tx.payee || tx.description}" (total de R$ ${(total / 100).toFixed(2).replace('.', ',')}). Use quando a compra foi antecipada, estornada ou quitada.`,
+    details: { forecasts: forecasts.length, totalCents: total },
+  };
+}
