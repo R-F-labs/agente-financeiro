@@ -6,9 +6,18 @@ node_modules/
 *.pdf
 *.xlsx
 *.csv
+*.zip
+*.ofx
 dados/
 planilhas/
+entrada/
 agente-financeiro.json
+
+# Fictitious fixtures used by the reader tests
+!plugin/server/test/fixtures/
+!plugin/server/test/fixtures/*.pdf
+!plugin/server/test/fixtures/*.zip
+!plugin/server/test/fixtures/*.csv
 
 # Environment and editors
 .env
