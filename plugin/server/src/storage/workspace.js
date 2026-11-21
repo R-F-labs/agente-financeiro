@@ -58,9 +58,14 @@ export function setupWorkspace(rawPath) {
         '',
         'Esta pasta guarda os seus dados financeiros. Nada aqui é enviado para servidores.',
         '',
+        'entrada/                      Coloque aqui extratos e faturas (PDF, ZIP, CSV), inclusive os protegidos por senha.',
         'dados/agente-financeiro.json  Base de dados (não edite manualmente).',
+        'dados/historico.jsonl         Registro de cada alteração feita pelo agente.',
         'dados/backups/                Cópias diárias automáticas dos últimos 30 dias.',
+        'dados/backups/operacoes/      Cópia do estado anterior a cada alteração (últimas 50).',
         'planilhas/                    Planilhas geradas a pedido, para abrir no Excel ou no celular.',
+        '',
+        'Senhas de documentos não são guardadas, e nenhuma cópia desprotegida é gravada.',
         '',
         'Dica: deixe esta pasta dentro do Google Drive, OneDrive ou iCloud para ter cópia na nuvem',
         'e acessar as planilhas pelo celular.',
@@ -69,6 +74,19 @@ export function setupWorkspace(rawPath) {
     );
   }
   return { dataDir, layout: store.layout };
+}
+
+/**
+ * Describes a change of data folder that needs the user's agreement, or null when the
+ * call only configures the first folder or repeats the current one.
+ * @param {string} rawPath
+ */
+export function workspaceChange(rawPath) {
+  const { dataDir } = readConfig();
+  if (!dataDir) return null;
+  const target = expandPath(rawPath);
+  if (resolve(dataDir) === target) return null;
+  return { from: dataDir, to: target };
 }
 
 /** Used by tests to inject an isolated store. */
