@@ -11,6 +11,8 @@ import { assetTools } from './asset-tools.js';
 import { marketTools } from './market-tools.js';
 import { closingTools } from './closing-tools.js';
 import { exportTools } from './export-tools.js';
+import { fileTools } from './file-tools.js';
+import { backupTools } from './backup-tools.js';
 
 /**
  * Every tool exposed by the server, grouped by context.
@@ -23,6 +25,7 @@ export function allTools() {
     ...accountTools,
     ...categoryTools,
     ...goalTools,
+    ...fileTools,
     ...documentTools,
     ...transactionTools,
     ...pendingTools,
@@ -31,5 +34,6 @@ export function allTools() {
     ...marketTools,
     ...closingTools,
     ...exportTools,
+    ...backupTools,
   ];
 }
