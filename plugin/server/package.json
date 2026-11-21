@@ -1,6 +1,6 @@
 {
   "name": "agente-financeiro-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Servidor MCP local do Agente Financeiro: guarda, confere e calcula dados financeiros pessoais no computador do usuário.",
   "private": true,
   "type": "module",
