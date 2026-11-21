@@ -20,7 +20,7 @@ O que não fecha vira **pendência**. Liste com `list_pending` e resolva com o u
 
 ## Parcelas canceladas
 
-Antecipação, quitação ou estorno de uma compra parcelada: `update_transaction` com `cancel_remaining_installments: true` no lançamento da parcela.
+Antecipação, quitação ou estorno de uma compra parcelada: `update_transaction` com `cancel_remaining_installments: true` no lançamento da parcela. O servidor pede confirmação mostrando quantas parcelas e qual valor serão cancelados.
 
 ## Regras
 

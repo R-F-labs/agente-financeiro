@@ -21,7 +21,7 @@ Não sugira categoria quando não houver segurança, por exemplo:
    - `remember: true` (padrão) para virar regra;
    - `apply_to_similar: true` para aplicar aos demais lançamentos iguais.
 
-Regras confirmadas pelo usuário prevalecem sobre sugestões automáticas. Com 2 ou 3 meses de uso, a maior parte dos lançamentos passa a ser categorizada sozinha.
+Regras confirmadas pelo usuário prevalecem sobre sugestões automáticas. Pelo mesmo motivo, uma chamada com `source: "assistant"` nunca troca a categoria que o usuário escolheu: esses lançamentos voltam em `skippedManual`. Categorizações com 25 ou mais lançamentos pedem confirmação (veja `seguranca.md`). Com 2 ou 3 meses de uso, a maior parte dos lançamentos passa a ser categorizada sozinha.
 
 ## Casos especiais
 
