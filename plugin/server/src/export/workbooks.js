@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildWorkbook } from './xlsx.js';
 import { cashFlow, commitments, isFlow } from '../domain/reports.js';
@@ -35,9 +35,19 @@ export function exportReports(store, { toMonth, months }) {
   const positionsMonth = latestPositionsMonth(data);
   if (positionsMonth) sheets.push(portfolioSheet(portfolioSnapshot(data, positionsMonth)));
 
-  const file = join(store.layout.spreadsheets, `agente-financeiro-${toMonth}.xlsx`);
-  writeFileSync(file, buildWorkbook(sheets));
+  const file = availableName(store.layout.spreadsheets, `agente-financeiro-${toMonth}`, '.xlsx');
+  writeFileSync(file, buildWorkbook(sheets), { flag: 'wx' });
   return { file, sheets: sheets.map((sheet) => sheet.name) };
+}
+
+/**
+ * Spreadsheets are never overwritten: the user may have edited or annotated an
+ * earlier one. A new file gets the next free suffix ("-2", "-3", ...).
+ */
+function availableName(folder, base, extension) {
+  let candidate = join(folder, `${base}${extension}`);
+  for (let index = 2; existsSync(candidate); index += 1) candidate = join(folder, `${base}-${index}${extension}`);
+  return candidate;
 }
 
 function flowSheet(name, flow) {

@@ -9,8 +9,9 @@ export const exportTools = [
     name: 'export_spreadsheet',
     title: 'Gerar planilha Excel',
     description:
-      'Gera uma planilha .xlsx na pasta "planilhas" com fluxo de caixa, gastos por competência, lançamentos, compromissos futuros e carteira. Informe o caminho do arquivo ao usuário.',
+      'Gera uma planilha .xlsx na pasta "planilhas" com fluxo de caixa, gastos por competência, lançamentos, compromissos futuros e carteira. Nunca sobrescreve: se já existir uma planilha do mês, cria outra com sufixo (-2, -3). Informe o caminho do arquivo ao usuário.',
     inputSchema: object({ to_month: month, months: { type: 'integer', minimum: 1, maximum: 36 } }),
+    annotations: { readOnlyHint: false, destructiveHint: false },
     handler: (input) => exportReports(requireStore(), { toMonth: input.to_month ?? today().slice(0, 7), months: input.months ?? 12 }),
   },
 ];
