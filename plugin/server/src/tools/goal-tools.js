@@ -32,6 +32,7 @@ export const goalTools = [
       priority: { type: 'integer', minimum: 1, maximum: 20 },
       active: { type: 'boolean' },
     }),
+    annotations: { readOnlyHint: false, destructiveHint: true },
     handler: (input) =>
       requireStore().transact((data) => {
         let goal = input.goal_id ? data.goals.find((item) => item.id === input.goal_id) : undefined;

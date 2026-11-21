@@ -34,6 +34,7 @@ export const categoryTools = [
       kind: { type: 'string', enum: ['income', 'expense'] },
       active: { type: 'boolean' },
     }),
+    annotations: { readOnlyHint: false, destructiveHint: true },
     handler: (input) =>
       requireStore().transact((data) => {
         if (input.category_id) {

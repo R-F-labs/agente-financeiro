@@ -50,6 +50,7 @@ export const assetTools = [
       },
       ['asset_id'],
     ),
+    annotations: { readOnlyHint: false, destructiveHint: true },
     handler: (input) =>
       requireStore().transact((data) => {
         const asset = data.assets.find((item) => item.id === input.asset_id);

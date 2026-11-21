@@ -10,7 +10,7 @@ export const marketTools = [
     description:
       'Busca na internet Selic, CDI 12 meses, IPCA, IGP-M, dólar, expectativas do Focus (Banco Central) e cotações dos ativos com ticker (brapi.dev, exige token). Chame antes do fechamento do mês ou quando os dados tiverem mais de um dia.',
     inputSchema: object({}),
-    annotations: { openWorldHint: true },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     handler: () => updateMarketData(requireStore()),
   },
   {

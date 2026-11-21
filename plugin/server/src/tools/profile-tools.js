@@ -31,7 +31,7 @@ export const profileTools = [
       alert_category_percent: { type: 'number', minimum: 0, maximum: 500, description: 'Avisar quando uma categoria passar X% da média.' },
       brapi_token: { type: 'string', description: 'Token gratuito da brapi.dev para cotações de ações e FIIs.' },
     }),
-    annotations: { idempotentHint: true },
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },
     handler: (input) => {
       const store = requireStore();
       return store.transact((data) => {

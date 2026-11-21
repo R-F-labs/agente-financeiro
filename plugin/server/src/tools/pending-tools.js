@@ -35,6 +35,7 @@ export const pendingTools = [
     description:
       'Marca uma pendência como resolvida, registrando a decisão. Faça antes os ajustes necessários (update_transaction, categorize_transactions, update_asset).',
     inputSchema: object({ pending_id: { type: 'string' }, resolution: { type: 'string', minLength: 3 } }, ['pending_id', 'resolution']),
+    annotations: { readOnlyHint: false, destructiveHint: false },
     handler: ({ pending_id, resolution }) =>
       requireStore().transact((data) => {
         const item = data.pending.find((candidate) => candidate.id === pending_id);
