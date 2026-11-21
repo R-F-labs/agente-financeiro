@@ -7,7 +7,9 @@ Conduza a configuração como uma conversa curta, uma etapa por vez. Não peça 
 1. Explique em uma frase: os dados ficam numa pasta do computador do usuário; nada vai para servidores.
 2. Pergunte onde guardar. Sugira o `suggestedDataDir` retornado por `get_status` e recomende uma pasta dentro do Google Drive, OneDrive ou iCloud Drive: assim há cópia na nuvem e as planilhas podem ser abertas no celular.
 3. Chame `setup_workspace` com o caminho completo escolhido.
-4. Informe onde ficam a base, os backups diários e a pasta de planilhas.
+4. Informe onde ficam a base, os backups, a pasta de planilhas e a pasta `entrada` (onde o usuário pode deixar extratos e faturas, inclusive os protegidos por senha).
+
+Se o agente já estiver configurado em outra pasta, `setup_workspace` pede confirmação antes de trocar. Os dados da pasta antiga não são apagados nem movidos.
 
 Se o usuário já usou o agente antes e reinstalou o plugin, aponte `setup_workspace` para a mesma pasta: os dados existentes são reaproveitados.
 
@@ -44,6 +46,6 @@ Para cada meta: nome, valor alvo, prazo, quanto já tem guardado e prioridade (`
 
 ## 6. Primeiro documento
 
-Peça o extrato mais recente de cada conta e siga `leitura-de-documentos.md`. Explique que extratos com períodos sobrepostos podem ser enviados sem problema: o agente ignora lançamentos repetidos.
+Peça o extrato mais recente de cada conta e siga `leitura-de-documentos.md`. Se algum documento tiver senha, o usuário pode escrever a senha junto com o pedido (veja `documentos-protegidos.md`). Explique que extratos com períodos sobrepostos podem ser enviados sem problema: o agente ignora lançamentos repetidos.
 
 Ao terminar, resuma o que foi configurado em uma lista curta.

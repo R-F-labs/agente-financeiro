@@ -1,6 +1,8 @@
 # Leitura de documentos
 
-Fluxo para cada PDF anexado. Trate um documento por vez.
+Fluxo para cada documento recebido. Trate um documento por vez.
+
+Se o arquivo estiver protegido por senha, for um ZIP ou CSV, estiver na pasta `entrada`, ou se você não conseguir abrir o anexo, leia antes com `read_document_file` (veja `documentos-protegidos.md`) e continue este roteiro com o texto devolvido.
 
 ## 1. Identificar
 
@@ -63,7 +65,7 @@ Se a resposta vier com `status: validation_failed`:
 1. Leia a diferença em `validation.checks`. Quando houver saldo por linha, o detalhe aponta a linha onde a conta quebra.
 2. Refaça a extração **completa**, conferindo linha a linha. Causas comuns: linha omitida, sinal invertido, linha duplicada, subtotal tratado como lançamento, parcela lida com o valor total da compra, linha que continua na página seguinte.
 3. Envie de novo.
-4. Se a diferença persistir, mostre ao usuário o que não bate. Somente com a concordância dele, reenvie com `force: true`.
+4. Se a diferença persistir, mostre ao usuário o que não bate. Somente com a concordância dele, reenvie com `force: true`. O servidor responde `confirmation_required` com um resumo: mostre, espere o "sim" e repita a mesma chamada com `confirmation_token`.
 
 Não tente fechar a conta ajustando valores por conta própria.
 
