@@ -33,9 +33,20 @@ for (const tool of allTools()) {
     const details = [schema.description, schema.enum ? `Valores: ${schema.enum.map((v) => `\`${v}\``).join(', ')}` : null]
       .filter(Boolean)
       .join(' ');
-    lines.push(`| \`${name}\` | ${type} | ${required.has(name) ? 'Sim' : 'Não'} | ${details.replace(/\|/g, '\\|')} |`);
+    lines.push(`| \`${name}\` | ${type} | ${required.has(name) ? 'Sim' : 'Não'} | ${escapeTableCell(details)} |`);
   }
   lines.push('');
 }
+
+/**
+ * Makes text safe inside a Markdown table cell: backslashes first, so that an
+ * existing backslash cannot cancel the escape added to a pipe, then pipes and
+ * line breaks (which would end the row).
+ * @param {string} text
+ */
+function escapeTableCell(text) {
+  return text.replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+}
+
 writeFileSync(target, `${lines.join('\n')}\n`);
 process.stdout.write(`Gerado ${target}\n`);
