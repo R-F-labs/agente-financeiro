@@ -25,9 +25,9 @@ Todos os dados ficam guardados no computador do usuário.
 |---|---|
 | Leitura de documentos | Extratos de conta corrente, faturas de cartão e extratos de investimento; conferência com os totais do próprio documento e nova leitura guiada quando não fecha |
 | Arquivos protegidos | PDFs com senha (RC4 e AES até 256 bits) e ZIPs com senha (ZipCrypto e AES), abertos em memória com a senha informada na conversa, sem guardar a senha nem gravar cópia desprotegida |
-| Organização | Eliminação de lançamentos repetidos (inclusive em extratos com períodos sobrepostos), categorização por regras aprendidas, central de pendências |
+| Organização | Eliminação de lançamentos repetidos (inclusive em extratos com períodos sobrepostos), categorização por regras aprendidas pelo nome ou pelo CPF/CNPJ de quem recebeu ou pagou, pesquisa do ramo da empresa pelo CNPJ, importação da lista de categorias do usuário, central de pendências |
 | Conciliação | Parcelas futuras previstas e confirmadas fatura a fatura, pagamento de fatura, transferências entre contas próprias, aplicações e resgates |
-| Relatórios | Fluxo de caixa por competência e por caixa, desvios por categoria contra a média, compromissos futuros, custo com juros e IOF |
+| Relatórios | Resumo mensal com entradas e saídas por categoria, fluxo de caixa por competência e por caixa, desvios por categoria contra a média, compromissos futuros, custo com juros e IOF |
 | Investimentos | Posição mensal por ativo, rentabilidade no mês e em 12 meses, comparação com CDI, IPCA, Ibovespa e IFIX, concentração e liquidez |
 | Mercado | Selic, CDI, IPCA, IGP-M, dólar e expectativas do Focus (Banco Central); cotações da B3 (brapi.dev) |
 | Fechamento mensal | Pacote com todos os números já calculados e análise com diagnóstico, cenários e decisões priorizadas, com registro das respostas do usuário |
