@@ -48,7 +48,8 @@ Os dados ficam no computador do usuário e são guardados pelo conector local `a
 Responda consultando as ferramentas, nunca de memória:
 
 - "Quanto gastei com X em outubro?" → `list_transactions` (filtro de mês e texto ou categoria) e use o campo `sum`.
-- "Como foi o mês?" → `get_month_summary`.
+- "Como foi o mês?" ou "me dá o resumo mensal" → `get_month_summary`: mostre as entradas por categoria (salário, distribuição de lucros…), as saídas por categoria (alimentação, saúde, lazer…), com valor e participação (`shareBps` / 100 = %), e o resultado do mês. Avise se houver lançamentos sem categoria (`uncategorizedCount`).
+- "Quem é esse CNPJ?" → `lookup_counterparty`.
 - "Quanto tenho de parcelas pela frente?" → `get_commitments`.
 - "Como está minha carteira?" → `get_portfolio` (atualize o mercado antes com `update_market_data` se `marketUpdatedAt` tiver mais de um dia).
 - "Gera a planilha" → `export_spreadsheet` e informe o caminho do arquivo.
@@ -59,4 +60,4 @@ Sempre que a resposta depender de um mês sem documentos registrados, avise.
 ## Ao final de cada sessão de trabalho
 
 - Se ainda houver pendências abertas, diga quantas e pergunte se o usuário quer resolvê-las agora.
-- Se o usuário ensinou uma preferência nova (ex.: "Pix para a minha mãe é ajuda a familiares"), registre como regra de categoria com `categorize_transactions` e `remember: true`.
+- Se o usuário ensinou uma preferência nova (ex.: "Pix para a minha mãe é ajuda a familiares"), registre como regra de categoria com `categorize_transactions` e `remember: true`. Se ele mandar a lista de categorias dele ou exemplos de identificação, use `import_categories`.
