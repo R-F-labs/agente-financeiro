@@ -77,7 +77,8 @@ Um único arquivo JSON (`dados/agente-financeiro.json`), regravado de forma atô
 | Coleção | Conteúdo |
 |---|---|
 | `accounts` | Contas correntes, poupanças, cartões e contas de investimento |
-| `categories`, `categoryRules` | Categorias (padrão e do usuário) e regras beneficiário → categoria |
+| `categories`, `categoryRules` | Categorias (padrão e do usuário) e regras de categorização, pelo CPF/CNPJ de quem recebeu ou pagou ou pelo nome do beneficiário |
+| `counterparties` | Empresas já pesquisadas pelo CNPJ (razão social, nome fantasia, atividade principal), para não consultar de novo |
 | `goals`, `profile` | Metas e perfil do investidor |
 | `documents` | Documentos registrados, com totais e resultado da conferência |
 | `transactions` | Lançamentos confirmados, previstos (parcelas futuras) e cancelados |
@@ -110,7 +111,7 @@ plugin/server/src/
 ├── guardrails/         Confirmação em duas etapas e contexto da operação
 ├── storage/            Configuração, pasta de dados, armazenamento JSON atômico,
 │                       backups por operação e histórico
-├── market/             Banco Central (SGS e Focus) e brapi
+├── market/             Banco Central (SGS e Focus), brapi e cadastro de CNPJ (BrasilAPI)
 ├── export/             Escritor de ZIP e XLSX e as planilhas padrão
 └── lib/                Dinheiro, datas, texto, validação de esquemas e erros
 ```

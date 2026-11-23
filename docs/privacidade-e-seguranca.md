@@ -4,7 +4,7 @@
 
 - Todos os dados financeiros ficam na pasta escolhida pelo usuário, no computador dele. O plugin não tem servidor próprio e não envia dados a terceiros.
 - Os documentos não são copiados para a base: o conector guarda apenas os lançamentos, os totais e o nome do arquivo. O arquivo original fica onde o usuário o deixou (por exemplo, na pasta `entrada`).
-- As únicas consultas externas do conector são públicas e não contêm dados do usuário: indicadores do Banco Central e cotações da brapi.dev (apenas os tickers da carteira).
+- As únicas consultas externas do conector são públicas e não contêm dados do usuário: indicadores do Banco Central, cotações da brapi.dev (apenas os tickers da carteira) e o cadastro público de empresas da BrasilAPI (apenas o CNPJ da empresa pesquisada, quando a ferramenta `lookup_counterparty` é usada). CPF de pessoas nunca é enviado a nenhum serviço e aparece mascarado (`***.456.789-**`) nas respostas das ferramentas.
 
 ## O que o assistente vê
 

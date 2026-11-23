@@ -14,7 +14,10 @@ Todas as ferramentas recebem e devolvem JSON. Valores monetários são retornado
 | `upsert_account` | Cadastrar ou alterar conta | Não |
 | `list_categories` | Listar categorias | Sim |
 | `upsert_category` | Criar ou alterar categoria | Não |
+| `import_categories` | Importar lista de categorias | Não |
 | `list_category_rules` | Listar regras de categorização | Sim |
+| `lookup_counterparty` | Pesquisar quem recebeu ou pagou | Não |
+| `list_counterparties` | Listar empresas conhecidas | Sim |
 | `list_goals` | Listar metas | Sim |
 | `upsert_goal` | Criar ou alterar meta | Não |
 | `list_input_files` | Listar arquivos na pasta de entrada | Sim |
@@ -140,11 +143,45 @@ Cria uma categoria (sem category_id) ou renomeia, move de grupo ou desativa uma 
 | `kind` | string | Não | Valores: `income`, `expense` |
 | `active` | boolean | Não |  |
 
+## import_categories
+
+**Importar lista de categorias**
+
+Recebe de uma vez a lista de categorias do usuário (receitas e despesas, com grupo) e, opcionalmente, exemplos de como identificar cada uma (beneficiário ou CPF/CNPJ -> categoria), que viram regras confirmadas pelo usuário. Categorias com o mesmo nome são mantidas. Com apply_to_uncategorized, as regras são aplicadas aos lançamentos que ainda estão sem categoria.
+
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|---|---|---|---|
+| `categories` | array | Sim |  |
+| `examples` | array | Não |  |
+| `apply_to_uncategorized` | boolean | Não |  |
+
 ## list_category_rules
 
 **Listar regras de categorização**
 
 Lista as regras aprendidas (beneficiário -> categoria). Útil para mostrar ao usuário o que o agente já sabe.
+
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|---|---|---|---|
+| `search` | string | Não |  |
+
+## lookup_counterparty
+
+**Pesquisar quem recebeu ou pagou**
+
+Descobre o ramo de uma empresa pelo CNPJ (cadastro público da Receita Federal, via BrasilAPI) e sugere a categoria. Informe tax_id ou transaction_id (de um lançamento com CNPJ na descrição). O resultado fica guardado: as próximas vezes não consultam de novo. CPF nunca é consultado.
+
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|---|---|---|---|
+| `tax_id` | string | Não | CNPJ ou CPF, com ou sem pontuação. |
+| `transaction_id` | string | Não |  |
+| `refresh` | boolean | Não | Consulta de novo mesmo se já estiver guardado. |
+
+## list_counterparties
+
+**Listar empresas conhecidas**
+
+Lista as empresas (por CNPJ) que o agente já pesquisou, com o ramo e a categoria aprendida para cada uma.
 
 | Parâmetro | Tipo | Obrigatório | Descrição |
 |---|---|---|---|
@@ -327,7 +364,7 @@ Marca uma pendência como resolvida, registrando a decisão. Faça antes os ajus
 
 **Resumo do mês**
 
-Resultado do mês nas visões de caixa e competência, desvios por categoria contra a média dos meses anteriores e custo com juros/IOF. Números já calculados: não recalcule.
+Resumo do mês: entradas e saídas por categoria (com a participação de cada uma em shareBps, centésimos de %), resultado nas visões de caixa e competência, desvios por categoria contra a média dos meses anteriores e custo com juros/IOF. Números já calculados: não recalcule.
 
 | Parâmetro | Tipo | Obrigatório | Descrição |
 |---|---|---|---|
