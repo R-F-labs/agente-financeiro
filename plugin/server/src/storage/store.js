@@ -25,6 +25,7 @@ const EMPTY_DATA = Object.freeze({
   accounts: [],
   categories: [],
   categoryRules: [],
+  counterparties: [],
   goals: [],
   profile: null,
   documents: [],

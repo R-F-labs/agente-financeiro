@@ -5,6 +5,7 @@ import { ensure, UserError } from '../lib/errors.js';
 import { validateBankStatement, validateCardInvoice, validateInvestmentStatement, DEFAULT_TOLERANCE_CENTS } from './validation.js';
 import { dedupKeys } from './dedup.js';
 import { matchRule, findCategory } from './categories.js';
+import { extractTaxId, formatTaxId } from '../lib/tax-id.js';
 import { findForecastFor, buildForecasts, newInstallmentGroupId } from './installments.js';
 import { reconcile, pendingItem } from './reconciliation.js';
 
@@ -333,6 +334,7 @@ function baseTransaction(data, fields) {
     description: fields.description,
     payee: fields.payee ?? null,
     payeeKey: payeeKey(fields.payee || fields.description),
+    counterpartyTaxId: extractTaxId(fields.payee, fields.description),
     kind: fields.kind ?? null,
     lineType: fields.lineType ?? null,
     cardLast4: fields.cardLast4 ?? null,
@@ -349,7 +351,7 @@ function baseTransaction(data, fields) {
     notes: null,
     createdAt: new Date().toISOString(),
   };
-  const rule = matchRule(data.categoryRules, tx.payee || tx.description);
+  const rule = matchRule(data.categoryRules, tx.payee || tx.description, tx.counterpartyTaxId);
   if (rule) {
     tx.categoryId = rule.categoryId;
     tx.categorySource = 'rule';
@@ -382,11 +384,29 @@ function createDocument(data, type, account, input, totals, validation, linesRec
   return document;
 }
 
+/**
+ * What the agent already knows about a counterparty identified by CPF/CNPJ.
+ * @param {any} data
+ * @param {{ kind: 'cnpj'|'cpf', digits: string } | null} taxId
+ */
+function counterpartyHint(data, taxId) {
+  if (!taxId) return null;
+  const known = (data.counterparties ?? []).find((item) => item.taxId === taxId.digits);
+  return { kind: taxId.kind, id: formatTaxId(taxId), known: Boolean(known), name: known?.tradeName || known?.name || null, activity: known?.activity?.description ?? null };
+}
+
 function result(data, document, created, reconciliation) {
   const categories = new Map(data.categories.map((category) => [category.id, category.name]));
   const uncategorized = created
     .filter((tx) => tx.status === 'confirmed' && !tx.categoryId && (tx.nature === 'income' || tx.nature === 'expense'))
-    .map((tx) => ({ id: tx.id, date: tx.date, description: tx.description, payee: tx.payee, amount: tx.amountCents / 100 }));
+    .map((tx) => ({
+      id: tx.id,
+      date: tx.date,
+      description: tx.description,
+      payee: tx.payee,
+      amount: tx.amountCents / 100,
+      counterparty: counterpartyHint(data, tx.counterpartyTaxId),
+    }));
   const openPending = data.pending.filter((item) => item.status === 'open');
   return {
     status: document.forced ? 'registered_with_differences' : 'registered',
@@ -401,6 +421,9 @@ function result(data, document, created, reconciliation) {
     openPending: openPending.length,
     nextSteps: [
       uncategorized.length > 0 ? 'Sugira categorias para as transações sem categoria e confirme com categorize_transactions.' : null,
+      uncategorized.some((tx) => tx.counterparty?.kind === 'cnpj' && !tx.counterparty.known)
+        ? 'Há lançamentos com CNPJ ainda desconhecido: use lookup_counterparty para descobrir o ramo da empresa antes de sugerir a categoria.'
+        : null,
       openPending.length > 0 ? 'Existem pendências abertas: use list_pending e resolva com o usuário.' : null,
     ].filter(Boolean),
   };
