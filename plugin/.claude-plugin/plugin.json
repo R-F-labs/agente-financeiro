@@ -1,7 +1,7 @@
 {
   "name": "agente-financeiro",
   "displayName": "Agente Financeiro",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Analista financeiro pessoal: lê extratos e faturas em PDF, confere os valores, categoriza gastos, acompanha parcelas, carteira e metas e faz o fechamento mensal. Os dados ficam no computador do usuário.",
   "author": {
     "name": "R-F-labs",
