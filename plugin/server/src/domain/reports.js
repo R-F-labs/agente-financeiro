@@ -69,6 +69,23 @@ export function commitments(data, fromMonth, months = 12) {
 }
 
 /**
+ * Share of each category in the month total, in basis points (1/100 of a percent),
+ * computed in integers. Largest amounts first.
+ * @param {Array<{ category: string, amountCents: number }>} items
+ * @param {number} totalCents
+ */
+function breakdown(items, totalCents) {
+  const total = Math.abs(totalCents);
+  return items
+    .map((item) => ({
+      category: item.category,
+      amountCents: item.amountCents,
+      shareBps: total === 0 ? 0 : Math.round((Math.abs(item.amountCents) * 10_000) / total),
+    }))
+    .sort((a, b) => Math.abs(b.amountCents) - Math.abs(a.amountCents));
+}
+
+/**
  * Month summary with category deviations against the average of the previous months.
  * @param {any} data
  * @param {string} month
@@ -100,6 +117,8 @@ export function monthSummary(data, month, lookback = 6) {
   return {
     month,
     competence: { incomeCents: current.incomeCents, expenseCents: current.expenseCents, netCents: current.netCents },
+    income: breakdown(current.byCategory.filter((item) => item.amountCents > 0), current.incomeCents),
+    expenses: breakdown(current.byCategory.filter((item) => item.amountCents < 0), current.expenseCents),
     cash: { incomeCents: cash.incomeCents, expenseCents: cash.expenseCents, netCents: cash.netCents },
     monthsInAverage: previous.length,
     deviations,

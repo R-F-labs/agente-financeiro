@@ -13,7 +13,7 @@ export const reportTools = [
     name: 'get_month_summary',
     title: 'Resumo do mês',
     description:
-      'Resultado do mês nas visões de caixa e competência, desvios por categoria contra a média dos meses anteriores e custo com juros/IOF. Números já calculados: não recalcule.',
+      'Resumo do mês: entradas e saídas por categoria (com a participação de cada uma em shareBps, centésimos de %), resultado nas visões de caixa e competência, desvios por categoria contra a média dos meses anteriores e custo com juros/IOF. Números já calculados: não recalcule.',
     inputSchema: object({ month }),
     annotations: { readOnlyHint: true },
     handler: (input) => monthSummary(requireStore().data, input.month ?? currentMonth()),
