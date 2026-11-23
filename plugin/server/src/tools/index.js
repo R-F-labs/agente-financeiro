@@ -2,6 +2,7 @@ import { workspaceTools } from './workspace-tools.js';
 import { profileTools } from './profile-tools.js';
 import { accountTools } from './account-tools.js';
 import { categoryTools } from './category-tools.js';
+import { counterpartyTools } from './counterparty-tools.js';
 import { goalTools } from './goal-tools.js';
 import { documentTools } from './document-tools.js';
 import { transactionTools } from './transaction-tools.js';
@@ -24,6 +25,7 @@ export function allTools() {
     ...profileTools,
     ...accountTools,
     ...categoryTools,
+    ...counterpartyTools,
     ...goalTools,
     ...fileTools,
     ...documentTools,
