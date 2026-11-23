@@ -1,4 +1,5 @@
 import { date, month, object } from './schemas.js';
+import { formatTaxId } from '../lib/tax-id.js';
 import { requireStore } from '../storage/workspace.js';
 import { upsertRule } from '../domain/categories.js';
 import { cancelRemainingForecasts } from '../domain/installments.js';
@@ -11,6 +12,16 @@ const NATURES = ['income', 'expense', 'transfer', 'investment_contribution', 'in
 export const BULK_CATEGORIZATION_LIMIT = 25;
 
 /** @type {import('../mcp/registry.js').ToolDefinition[]} */
+/**
+ * Same counterparty: same CPF/CNPJ when both lines carry one, otherwise the same payee key.
+ * @param {any} a
+ * @param {any} b
+ */
+function sameCounterparty(a, b) {
+  if (a.counterpartyTaxId && b.counterpartyTaxId) return a.counterpartyTaxId.digits === b.counterpartyTaxId.digits;
+  return a.payeeKey === b.payeeKey;
+}
+
 export const transactionTools = [
   {
     name: 'list_transactions',
@@ -50,6 +61,7 @@ export const transactionTools = [
           cashDate: tx.cashDate,
           accountId: tx.accountId,
           payee: tx.payee,
+          counterparty: formatTaxId(tx.counterpartyTaxId),
           description: tx.description,
           amountCents: tx.amountCents,
           category: names.get(tx.categoryId) ?? null,
@@ -107,12 +119,12 @@ export const transactionTools = [
           tx.categorySource = origin;
           updated += 1;
           if (item.remember !== false) {
-            const rule = upsertRule(data.categoryRules, tx.payee || tx.description, item.category_id, origin);
+            const rule = upsertRule(data.categoryRules, tx.payee || tx.description, item.category_id, origin, tx.counterpartyTaxId);
             if (rule) rules.push(rule.pattern);
           }
           if (item.apply_to_similar) {
             for (const other of data.transactions) {
-              if (other.id !== tx.id && !other.categoryId && other.payeeKey === tx.payeeKey && (other.nature === 'income' || other.nature === 'expense')) {
+              if (other.id !== tx.id && !other.categoryId && sameCounterparty(other, tx) && (other.nature === 'income' || other.nature === 'expense')) {
                 other.categoryId = item.category_id;
                 other.categorySource = origin;
                 updated += 1;

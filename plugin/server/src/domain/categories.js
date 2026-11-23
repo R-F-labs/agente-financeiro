@@ -22,7 +22,7 @@ const DEFAULT_TREE = {
     Outros: ['Outras despesas'],
   },
   income: {
-    Receitas: ['Salário', 'Pró-labore', 'Serviços prestados', 'Rendimentos', 'Reembolsos', 'Outras receitas'],
+    Receitas: ['Salário', 'Pró-labore', 'Distribuição de lucros', 'Serviços prestados', 'Rendimentos', 'Reembolsos', 'Outras receitas'],
   },
 };
 
@@ -54,35 +54,47 @@ export function findCategory(categories, ref) {
   return categories.find((category) => category.name.toLowerCase() === target);
 }
 
+const rank = (rule) => (rule.origin === 'manual' ? 0 : 1);
+
 /**
- * Looks up a learned rule for a payee. Exact key match wins over prefix match;
- * manual rules win over rules learned from assistant suggestions.
+ * Looks up a learned rule. A rule tied to the counterparty's CPF/CNPJ wins over
+ * rules matched by name; exact name match wins over prefix match; manual rules win
+ * over rules learned from assistant suggestions.
  * @param {any[]} rules
  * @param {string} payee
+ * @param {{ kind: string, digits: string } | null} [taxId]
  */
-export function matchRule(rules, payee) {
+export function matchRule(rules, payee, taxId = null) {
+  if (taxId) {
+    const byId = rules.filter((rule) => rule.taxId === taxId.digits).sort((a, b) => rank(a) - rank(b));
+    if (byId.length > 0) return byId[0];
+  }
   const key = payeeKey(payee);
   if (!key) return undefined;
-  const rank = (rule) => (rule.origin === 'manual' ? 0 : 1);
-  const exact = rules.filter((rule) => rule.pattern === key).sort((a, b) => rank(a) - rank(b));
+  const byName = rules.filter((rule) => !rule.taxId);
+  const exact = byName.filter((rule) => rule.pattern === key).sort((a, b) => rank(a) - rank(b));
   if (exact.length > 0) return exact[0];
-  const prefix = rules
+  const prefix = byName
     .filter((rule) => rule.pattern.length >= 4 && key.startsWith(rule.pattern))
     .sort((a, b) => rank(a) - rank(b) || b.pattern.length - a.pattern.length);
   return prefix[0];
 }
 
 /**
- * Creates or updates a rule for a payee.
+ * Creates or updates a rule. With a CPF/CNPJ the rule is tied to the id, so the
+ * same counterparty is recognized even when the bank prints its name differently.
  * @param {any[]} rules
  * @param {string} payee
  * @param {string} categoryId
  * @param {'manual'|'assistant'} origin
+ * @param {{ kind: 'cnpj'|'cpf', digits: string } | null} [taxId]
  */
-export function upsertRule(rules, payee, categoryId, origin) {
+export function upsertRule(rules, payee, categoryId, origin, taxId = null) {
   const pattern = payeeKey(payee);
-  if (!pattern) return undefined;
-  const existing = rules.find((rule) => rule.pattern === pattern);
+  if (!pattern && !taxId) return undefined;
+  const existing = taxId
+    ? rules.find((rule) => rule.taxId === taxId.digits)
+    : rules.find((rule) => !rule.taxId && rule.pattern === pattern);
   if (existing) {
     if (existing.origin === 'manual' && origin !== 'manual') return existing;
     existing.categoryId = categoryId;
@@ -90,7 +102,16 @@ export function upsertRule(rules, payee, categoryId, origin) {
     existing.updatedAt = new Date().toISOString();
     return existing;
   }
-  const rule = { id: newId('rule'), pattern, categoryId, origin, hits: 0, createdAt: new Date().toISOString() };
+  const rule = {
+    id: newId('rule'),
+    pattern: pattern || taxId.digits,
+    taxId: taxId?.digits ?? null,
+    taxIdKind: taxId?.kind ?? null,
+    categoryId,
+    origin,
+    hits: 0,
+    createdAt: new Date().toISOString(),
+  };
   rules.push(rule);
   return rule;
 }
