@@ -2,6 +2,7 @@ import { object } from './schemas.js';
 import { requireStore } from '../storage/workspace.js';
 import { newId } from '../lib/text.js';
 import { UserError } from '../lib/errors.js';
+import { applyRulesToUncategorized, importCategories, learnExamples } from '../domain/category-import.js';
 
 /** @type {import('../mcp/registry.js').ToolDefinition[]} */
 export const categoryTools = [
@@ -49,6 +50,48 @@ export const categoryTools = [
         const category = { id: newId('cat'), name: input.name, group: input.group, kind: input.kind, active: true, system: false };
         data.categories.push(category);
         return { saved: true, category };
+      }),
+  },
+  {
+    name: 'import_categories',
+    title: 'Importar lista de categorias',
+    description:
+      'Recebe de uma vez a lista de categorias do usuário (receitas e despesas, com grupo) e, opcionalmente, exemplos de como identificar cada uma (beneficiário ou CPF/CNPJ -> categoria), que viram regras confirmadas pelo usuário. Categorias com o mesmo nome são mantidas. Com apply_to_uncategorized, as regras são aplicadas aos lançamentos que ainda estão sem categoria.',
+    inputSchema: object(
+      {
+        categories: {
+          type: 'array',
+          items: object(
+            {
+              kind: { type: 'string', enum: ['income', 'expense'] },
+              group: { type: 'string', minLength: 2 },
+              name: { type: 'string', minLength: 2 },
+            },
+            ['kind', 'group', 'name'],
+          ),
+        },
+        examples: {
+          type: 'array',
+          items: object(
+            {
+              payee: { type: 'string', minLength: 2 },
+              tax_id: { type: 'string', description: 'CNPJ ou CPF de quem recebeu ou pagou.' },
+              category: { type: 'string', description: 'Nome ou id da categoria.' },
+            },
+            ['category'],
+          ),
+        },
+        apply_to_uncategorized: { type: 'boolean' },
+      },
+      ['categories'],
+    ),
+    annotations: { readOnlyHint: false, destructiveHint: false },
+    handler: (input) =>
+      requireStore().transact((data) => {
+        const categories = importCategories(data, input.categories);
+        const examples = learnExamples(data, input.examples ?? []);
+        const applied = input.apply_to_uncategorized ? applyRulesToUncategorized(data) : 0;
+        return { ...categories, rulesLearned: examples, categorizedNow: applied };
       }),
   },
   {
