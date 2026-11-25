@@ -54,7 +54,7 @@ Detalhes em [docs/arquitetura.md](docs/arquitetura.md).
 ## Requisitos
 
 - **Claude** com suporte a plugins: aplicativo Claude Desktop (Cowork) ou Claude Code.
-- **Node.js 18 ou superior** instalado no computador ([nodejs.org](https://nodejs.org), versão LTS). Para conferir, rode `node -v` no terminal.
+- **Node.js 18 ou superior** instalado no computador ([nodejs.org](https://nodejs.org), versão LTS). Para conferir, rode `node -v` no terminal. Se não tiver, o próprio Claude avisa na primeira conversa, explica para que serve e instala (no Claude Code, com a sua aprovação) ou orienta a instalação passo a passo.
 - Acesso a este repositório no GitHub (repositório privado: o usuário precisa ter sido convidado).
 
 O conector local funciona no aplicativo de computador (Cowork) e no Claude Code. Ele não roda no aplicativo de celular nem no Claude pela web. As planilhas geradas podem ser abertas no celular quando a pasta de dados estiver num serviço de nuvem.
@@ -164,7 +164,7 @@ Não suportados nesta versão: PDFs escaneados (imagem, sem texto), previdência
 
 Esta seção é destinada a um assistente de IA (por exemplo, Claude Code) que recebeu a tarefa de instalar o plugin no computador do usuário.
 
-1. Verifique se o Node.js 18 ou superior está instalado com `node -v`. Se não estiver, peça ao usuário para instalar a versão LTS em https://nodejs.org e aguarde.
+1. Verifique se o Node.js 18 ou superior está instalado com `node -v`. Se não estiver, siga [plugin/skills/agente-financeiro/references/instalacao-do-node.md](plugin/skills/agente-financeiro/references/instalacao-do-node.md): explique ao usuário o que será instalado e por quê, peça autorização, instale pelo gerenciador do sistema ou oriente a instalação manual. Não use `sudo`, não peça senhas e não altere as permissões do Claude por conta própria.
 2. Registre o catálogo: `claude plugin marketplace add R-F-labs/agente-financeiro`.
 3. Instale o plugin: `claude plugin install agente-financeiro@agente-financeiro`.
 4. Peça ao usuário para reiniciar a sessão (ou o aplicativo) para carregar o conector.

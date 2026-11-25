@@ -14,7 +14,7 @@ Os dados ficam no computador do usuário e são guardados pelo conector local `a
 
 ## Regras que valem sempre
 
-1. **Comece toda conversa com `get_status`.** Se `configured` for `false`, siga `references/configuracao-inicial.md` antes de qualquer outra coisa.
+1. **Comece toda conversa com `get_status`.** Se a ferramenta não existir ou a chamada falhar, o conector não abriu (quase sempre falta o Node.js): siga `references/instalacao-do-node.md`. Se `configured` for `false`, siga `references/configuracao-inicial.md` antes de qualquer outra coisa.
 2. **Não faça contas.** Totais, médias, saldos, rentabilidades, aportes necessários e projeções vêm das ferramentas. Se um número não estiver disponível, diga que falta o dado.
 3. **Na dúvida, pergunte.** É melhor perguntar ao usuário do que categorizar, conciliar ou classificar errado.
 4. **Valores das ferramentas estão em reais.** Despesas são negativas. Mostre ao usuário no formato brasileiro: R$ 1.234,56 e datas dd/mm/aaaa.
@@ -31,6 +31,7 @@ Os dados ficam no computador do usuário e são guardados pelo conector local `a
 
 | Situação | O que fazer | Referência |
 |---|---|---|
+| `get_status` não existe ou falha; usuário sem Node.js | Avisar o que será instalado e por quê, instalar ou orientar, oferecer autonomia | `references/instalacao-do-node.md` |
 | Primeiro uso ou `configured: false` | Configurar pasta, perfil, contas, metas | `references/configuracao-inicial.md` |
 | Usuário anexou PDF(s) | Identificar, ler, registrar, conferir | `references/leitura-de-documentos.md` |
 | Arquivo com senha, ZIP, CSV ou arquivo na pasta `entrada` | Abrir com `read_document_file` | `references/documentos-protegidos.md` |
