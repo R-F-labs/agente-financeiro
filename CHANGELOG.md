@@ -4,6 +4,12 @@ Todas as mudanças relevantes deste projeto são registradas aqui. O formato seg
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e o versionamento segue
 [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
+## [Não publicado]
+
+### Adicionado
+
+- Guia da skill para quando o conector não abre por falta do Node.js: o assistente avisa o que vai instalar e por quê, pede autorização, instala pelo `winget` ou `brew` no Claude Code, orienta a instalação manual quando não consegue (ou no Cowork) e pode explicar como o usuário libera, ele mesmo, esses comandos para o assistente rodar sem pedir aprovação a cada vez.
+
 ## [0.3.0] - 2026-11-23
 
 ### Adicionado
