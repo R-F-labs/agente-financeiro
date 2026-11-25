@@ -29,6 +29,17 @@ A leitura dos documentos e a análise acontecem no Claude do usuário, sujeitas 
 - O assistente é instruído a não repetir a senha nas respostas e a nunca tentar adivinhar senhas.
 - A senha passa pela conversa com o Claude, sujeita aos termos da conta do usuário. Quem preferir pode desbloquear o arquivo por conta própria antes de enviar.
 
+### Algoritmos antigos exigidos pelos formatos
+
+Alguns algoritmos usados na leitura são considerados fracos, mas são os que os próprios formatos definem. Trocá-los impediria a leitura dos arquivos que os bancos ainda emitem. Nenhum deles é usado para proteger dados do plugin.
+
+| Onde | Algoritmo | Por que é assim |
+|---|---|---|
+| `plugin/server/src/reader/pdf/security.js` | MD5 e RC4 na derivação da chave de PDFs revisão 2 a 4 | É o handler de segurança padrão definido na norma do PDF (ISO 32000-1, 7.6.3). A senha não é guardada: a derivação só abre o arquivo em memória. PDFs AES-256 (revisão 6) usam SHA-256/384/512, como a norma exige. |
+| `plugin/server/scripts/build-reader-fixtures.py` | PBKDF2-SHA1 com 1000 iterações e AES em modo ECB | Gera os arquivos de teste no formato WinZip AES, que fixa esses parâmetros. O ECB só cifra o contador para montar o modo CTR little-endian da especificação. O script não faz parte do plugin instalado. |
+
+Os alertas do code scanning (CodeQL) para esses trechos foram dispensados no GitHub com esta justificativa.
+
 ## Proteção contra alterações indevidas
 
 - Ações sensíveis exigem confirmação do usuário por meio de um código de uso único ligado aos argumentos exatos da ação (detalhes em `arquitetura.md`, seção Guardrails).
